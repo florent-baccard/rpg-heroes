@@ -9,20 +9,16 @@ const defaultStats = {
     constitution: 10
 };
 
-// Configuration des niveaux et XP
-const EXPERIENCE_BASE = 100; // XP nécessaire pour le niveau 1
+const EXPERIENCE_BASE = 100;
 
-// Calculer l'XP nécessaire pour le niveau actuel
 function calculateRequiredXP(level) {
     return EXPERIENCE_BASE * Math.pow(2, level - 1);
 }
 
-// Calculer le niveau et l'XP actuelle
 function calculateLevelAndXP(totalExperience) {
     let level = 1;
     let xp = totalExperience;
-    
-    // Calculer le niveau actuel
+
     while (xp >= calculateRequiredXP(level)) {
         xp -= calculateRequiredXP(level);
         level++;
@@ -35,21 +31,19 @@ function calculateLevelAndXP(totalExperience) {
     };
 }
 
-// Calculer les PV max en fonction du niveau
 function calculateMaxHP(level) {
     return defaultStats.vieMax + (level - 1) * 10;
 }
 
-// Obtenir les récompenses d'XP en fonction du type de choix
 function getExperienceReward(choice) {
     if (!choice.type) return 0;
 
     const rewards = {
-        'combat': 50,    // Combat standard
-        'boss': 150,     // Combat de boss
-        'quest': 75,     // Quête réussie
-        'explore': 25,   // Exploration
-        'dialogue': 10   // Dialogue important
+        'combat': 50,
+        'boss': 150,
+        'quest': 75,
+        'explore': 25,
+        'dialogue': 10
     };
 
     return rewards[choice.type] || 0;
@@ -84,7 +78,6 @@ async function handleGameRoutes(req, res, db) {
                     });
                     
                     if (gameSave) {
-                        // S'assurer que les statistiques sont complètes
                         const completeGameSave = {
                             ...gameSave,
                             stats: {
@@ -112,7 +105,6 @@ async function handleGameRoutes(req, res, db) {
                 const { characterId, choiceId, eventId } = JSON.parse(req.body);
                 
                 try {
-                    // Récupérer l'événement et le personnage
                     const event = await events.findOne({ id: eventId });
                     const character = await characters.findOne({ _id: new ObjectId(characterId) });
                     
@@ -122,13 +114,11 @@ async function handleGameRoutes(req, res, db) {
                         return;
                     }
 
-                    // S'assurer que les statistiques sont initialisées
                     character.stats = {
                         ...defaultStats,
                         ...character.stats
                     };
 
-                    // Initialiser l'expérience si nécessaire
                     character.totalExperience = character.totalExperience || 0;
                     character.level = character.level || 1;
 
@@ -140,7 +130,6 @@ async function handleGameRoutes(req, res, db) {
                         return;
                     }
 
-                    // Vérifier les prérequis
                     if (choice.requirements) {
                         const meetsRequirements = Object.entries(choice.requirements)
                             .every(([stat, value]) => character.stats[stat] >= value);
@@ -152,14 +141,12 @@ async function handleGameRoutes(req, res, db) {
                         }
                     }
 
-                    // Calculer l'expérience et le niveau
                     const experienceGained = getExperienceReward(choice) || 25;
                     const oldLevel = character.level || 1;
                     const newTotalExperience = (character.totalExperience || 0) + experienceGained;
                     const levelInfo = calculateLevelAndXP(newTotalExperience);
                     const levelUp = levelInfo.level > oldLevel;
 
-                    // Préparer les mises à jour
                     const updates = {
                         currentEvent: choice.consequences.nextEvent,
                         choices: [...(character.choices || []), choiceId],
@@ -170,12 +157,10 @@ async function handleGameRoutes(req, res, db) {
                         stats: { ...character.stats }
                     };
 
-                    // Si le personnage monte de niveau
                     if (levelUp) {
                         console.log(`Niveau supérieur ! ${oldLevel} -> ${levelInfo.level}`);
                         console.log(`XP actuelle: ${levelInfo.currentXP}/${levelInfo.requiredXP}`);
                         
-                        // Calculer les nouveaux PV max
                         const newVieMax = calculateMaxHP(levelInfo.level);
                         
                         updates.stats = {
@@ -189,14 +174,12 @@ async function handleGameRoutes(req, res, db) {
                         };
                     }
 
-                    // Appliquer les modifications de stats du choix UNIQUEMENT si spécifiées
                     if (choice.consequences.stats) {
                         Object.entries(choice.consequences.stats).forEach(([stat, value]) => {
                             updates.stats[stat] = (updates.stats[stat] || 0) + value;
                         });
                     }
 
-                    // Mettre à jour l'inventaire
                     updates.inventory = [...(character.inventory || [])];
                     if (choice.consequences.inventory) {
                         if (choice.consequences.inventory.add) {
@@ -216,13 +199,11 @@ async function handleGameRoutes(req, res, db) {
                         }
                     }
 
-                    // Mettre à jour le personnage
                     await characters.updateOne(
                         { _id: new ObjectId(characterId) },
                         { $set: updates }
                     );
 
-                    // Sauvegarder automatiquement la partie
                     const saveData = {
                         characterId: characterId.toString(),
                         currentEvent: updates.currentEvent,
@@ -255,14 +236,13 @@ async function handleGameRoutes(req, res, db) {
             } else if (req.url === '/api/game/start') {
                 try {
                     const { characterId } = JSON.parse(req.body);
-                    
-                    // Vérifier si une sauvegarde existe
+
                     const existingSave = await gameSaves.findOne({ 
                         characterId: characterId.toString() 
                     });
                     
                     if (existingSave) {
-                        // S'assurer que les statistiques sont complètes
+
                         const levelInfo = calculateLevelAndXP(existingSave.totalExperience || 0);
                         const newVieMax = calculateMaxHP(levelInfo.level);
                         const completeStats = {
@@ -272,7 +252,6 @@ async function handleGameRoutes(req, res, db) {
                             vie: Math.min(existingSave.stats?.vie || newVieMax, newVieMax)
                         };
 
-                        // Mettre à jour la sauvegarde avec les stats complètes
                         const updatedSave = {
                             ...existingSave,
                             stats: completeStats,
@@ -282,7 +261,6 @@ async function handleGameRoutes(req, res, db) {
                             level: levelInfo.level
                         };
 
-                        // Mettre à jour le personnage
                         await characters.updateOne(
                             { _id: new ObjectId(characterId) },
                             { $set: {
@@ -303,7 +281,7 @@ async function handleGameRoutes(req, res, db) {
                             saveData: updatedSave
                         }));
                     } else {
-                        // Créer une nouvelle partie
+
                         const initialGameState = {
                             currentEvent: 1,
                             stats: { 
@@ -319,13 +297,11 @@ async function handleGameRoutes(req, res, db) {
                             level: 1
                         };
 
-                        // Mettre à jour le personnage
                         await characters.updateOne(
                             { _id: new ObjectId(characterId) },
                             { $set: initialGameState }
                         );
 
-                        // Créer la première sauvegarde
                         const saveData = {
                             characterId: characterId.toString(),
                             ...initialGameState,

@@ -199,7 +199,7 @@ const gameEvents = [
                 id: 13,
                 text: "Explorer le temple (À suivre...)",
                 consequences: {
-                    nextEvent: 1, // Retour au début pour l'instant
+                    nextEvent: 1,
                     stats: {
                         intelligence: 1,
                         force: 1,

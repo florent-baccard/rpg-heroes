@@ -59,19 +59,17 @@ const GameStart = ({ character, onGameStart }) => {
                 throw new Error('Données de jeu invalides');
             }
 
-            // Initialiser ou compléter les données du jeu
             const completeGameData = {
                 ...gameData,
                 stats: {
                     ...defaultStats,
-                    ...(gameData.stats || {})  // Utiliser les stats existantes ou un objet vide
+                    ...(gameData.stats || {})  
                 },
                 inventory: gameData.inventory || [],
                 choices: gameData.choices || [],
                 currentEvent: gameData.currentEvent || 1
             };
 
-            // Mettre à jour le personnage avec les données complètes
             onGameStart(completeGameData);
         } catch (error) {
             console.error('Erreur lors du démarrage de la partie:', error);

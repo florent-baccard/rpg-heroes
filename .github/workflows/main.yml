@@ -32,11 +32,11 @@ jobs:
       
     - name: Test Frontend
       working-directory: ./frontend
-      run: npm test -- --passWithNoTests
+      run: npm test
       
     - name: Test Backend
       working-directory: ./backend
-      run: npm test -- --passWithNoTests
+      run: npm test
 
     - name: Set up Docker Compose
       run: |
@@ -87,15 +87,10 @@ jobs:
 
     - name: Deploy with zero-downtime
       run: |
-        # Arrêter l'ancien conteneur seulement après que le nouveau soit prêt
         docker compose pull
         docker compose up -d --no-deps --build frontend
         docker compose up -d --no-deps --build backend
-        # Attendre que les nouveaux conteneurs soient en bonne santé
         sleep 10
-        # Vérifier que les nouveaux conteneurs fonctionnent
         docker compose ps
-        # Supprimer les anciens conteneurs
         docker compose rm -f
-        # Nettoyer les images non utilisées
         docker image prune -f

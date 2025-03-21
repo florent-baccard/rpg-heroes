@@ -9,9 +9,8 @@ async function initializeDatabase() {
         const client = await MongoClient.connect(url);
         const db = client.db(dbName);
 
-        // Initialiser la collection des événements
         const events = db.collection('events');
-        await events.deleteMany({}); // Nettoyer la collection
+        await events.deleteMany({}); 
         await events.insertMany(gameEvents);
 
         console.log('Base de données initialisée avec succès');

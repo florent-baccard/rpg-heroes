@@ -25,7 +25,7 @@ async function handleCharacterRoutes(req, res, db) {
         case 'POST':
             if (req.url === '/api/characters') {
                 let character = JSON.parse(req.body);
-                // Initialisation des stats de base
+
                 character.stats = {
                     hp: 100,
                     maxHp: 100,

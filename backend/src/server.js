@@ -8,16 +8,14 @@ const url = process.env.MONGODB_URI || 'mongodb://mongodb:27017';
 const dbName = 'gamerpg';
 const port = process.env.PORT || 5000;
 
-// Initialiser la base de données au démarrage
 initializeDatabase().catch(console.error);
 
 const server = http.createServer(async (req, res) => {
-    // Configuration des headers CORS
+
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-    // Gestion des requêtes OPTIONS pour CORS
     if (req.method === 'OPTIONS') {
         res.writeHead(200);
         res.end();
@@ -28,7 +26,6 @@ const server = http.createServer(async (req, res) => {
         const client = await MongoClient.connect(url);
         const db = client.db(dbName);
 
-        // Middleware pour parser le body
         let body = '';
         req.on('data', chunk => {
             body += chunk.toString();
@@ -36,13 +33,11 @@ const server = http.createServer(async (req, res) => {
 
         req.on('end', async () => {
             try {
-                // Ajouter le body parsé à la requête
                 req.body = body;
                 console.log('Request URL:', req.url);
                 console.log('Request Method:', req.method);
                 console.log('Request Body:', body);
 
-                // Gestion des routes
                 if (req.url.startsWith('/api/characters')) {
                     await handleCharacterRoutes(req, res, db);
                 } else if (req.url.startsWith('/api/game')) {
