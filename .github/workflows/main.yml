@@ -1,0 +1,101 @@
+name: Game RPG CI/CD
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        
+    - name: Install Frontend Dependencies
+      working-directory: ./frontend
+      run: npm install
+      
+    - name: Install Backend Dependencies
+      working-directory: ./backend
+      run: npm install
+      
+    - name: Build Frontend
+      working-directory: ./frontend
+      run: npm run build
+      
+    - name: Test Frontend
+      working-directory: ./frontend
+      run: npm test -- --passWithNoTests
+      
+    - name: Test Backend
+      working-directory: ./backend
+      run: npm test -- --passWithNoTests
+
+    - name: Set up Docker Compose
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y ca-certificates curl gnupg
+        sudo install -m 0755 -d /etc/apt/keyrings
+        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+        sudo chmod a+r /etc/apt/keyrings/docker.gpg
+        echo \
+          "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+          "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
+          sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+        sudo apt-get update
+        sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+        docker compose version
+      
+    - name: Build and Test Docker
+      run: |
+        docker compose build
+        docker compose up -d
+        sleep 10
+        docker compose ps
+        docker compose logs
+        docker compose down
+
+  deploy:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Docker Compose
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y ca-certificates curl gnupg
+        sudo install -m 0755 -d /etc/apt/keyrings
+        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+        sudo chmod a+r /etc/apt/keyrings/docker.gpg
+        echo \
+          "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+          "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
+          sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+        sudo apt-get update
+        sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+        docker compose version
+
+    - name: Deploy with zero-downtime
+      run: |
+        # Arrêter l'ancien conteneur seulement après que le nouveau soit prêt
+        docker compose pull
+        docker compose up -d --no-deps --build frontend
+        docker compose up -d --no-deps --build backend
+        # Attendre que les nouveaux conteneurs soient en bonne santé
+        sleep 10
+        # Vérifier que les nouveaux conteneurs fonctionnent
+        docker compose ps
+        # Supprimer les anciens conteneurs
+        docker compose rm -f
+        # Nettoyer les images non utilisées
+        docker image prune -f

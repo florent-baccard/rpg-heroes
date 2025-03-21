@@ -1,0 +1,210 @@
+.App {
+  text-align: center;
+  min-height: 100vh;
+  background-color: #1a1a2e;
+  color: #ffffff;
+  font-family: 'Segoe UI', 'Roboto', sans-serif;
+}
+
+.App-header {
+  background-color: rgba(0, 0, 0, 0.5);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.App-header h1 {
+  margin: 0;
+  color: #ffd700;
+  font-size: 3rem;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.App-header p {
+  font-size: 1.2rem;
+  color: #b8b9cc;
+  margin-top: 0.5rem;
+}
+
+.game-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  display: flex;
+  gap: 20px;
+}
+
+.characters-list {
+  flex: 0 0 300px;
+  background-color: rgba(0, 0, 0, 0.3);
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.character-select {
+  margin-bottom: 20px;
+}
+
+.character-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.character-button {
+  padding: 10px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 4px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.character-button:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.character-button.selected {
+  background-color: #ffd700;
+  color: #1a1a2e;
+}
+
+.character-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.new-character-button {
+  background-color: #4CAF50;
+  color: white;
+  padding: 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.new-character-button:hover {
+  background-color: #45a049;
+  transform: translateY(-2px);
+}
+
+.delete-character-button {
+  background-color: #f44336;
+  color: white;
+  padding: 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.delete-character-button:hover {
+  background-color: #da190b;
+}
+
+.game-content {
+  flex: 1;
+  background-color: rgba(0, 0, 0, 0.3);
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.character-info {
+  margin-bottom: 20px;
+  padding: 20px;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+}
+
+.character-info h2 {
+  color: #ffd700;
+  margin-top: 0;
+}
+
+.stats {
+  text-align: left;
+}
+
+.stats h3 {
+  color: #ffd700;
+  margin-bottom: 15px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+}
+
+.stat-item {
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 10px;
+  border-radius: 4px;
+}
+
+.stat-item span {
+  color: #ffd700;
+  margin-right: 10px;
+}
+
+.creation-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.creation-content {
+  background-color: #1a1a2e;
+  padding: 20px;
+  border-radius: 8px;
+  max-width: 600px;
+  width: 90%;
+}
+
+.close-button {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  color: #e1e1e6;
+  font-size: 1.5rem;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.close-button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: rotate(90deg);
+}
+
+@media (max-width: 768px) {
+  .game-container {
+    flex-direction: column;
+  }
+
+  .characters-list {
+    flex: none;
+    width: 100%;
+  }
+
+  .App-header h1 {
+    font-size: 2rem;
+  }
+} 
